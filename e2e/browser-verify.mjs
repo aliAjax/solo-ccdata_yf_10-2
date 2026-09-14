@@ -1,15 +1,27 @@
-// 真实浏览器验证：完整走通 录入→排程→冲突定位→中断模拟→演练→回滚→发布/拒绝发布
+// 真实浏览器验证：完整走通 录入→排程→冲突定位→中断模拟→演练→回滚→发布/拒绝发布。
+// 自包含：脚本自行启动隔离服务（全新内存存储、每次从初始方案开始），结束后清理，
+// 不依赖任何手动启动的常驻服务，连续执行结果一致。
 import { chromium } from 'playwright';
 import { mkdirSync, existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
+import { createServer } from '../server/index.js';
 
 // 无 root 环境下本地解压的 Chromium 系统库
 const LOCAL_LIBS = ['/tmp/syslibs/root/lib/aarch64-linux-gnu', '/tmp/syslibs/root/usr/lib/aarch64-linux-gnu']
   .filter(existsSync).join(':');
 if (LOCAL_LIBS) process.env.LD_LIBRARY_PATH = [LOCAL_LIBS, process.env.LD_LIBRARY_PATH].filter(Boolean).join(':');
 
-const BASE = process.env.BASE_URL || 'http://localhost:4173';
+assert.ok(existsSync('dist/index.html'), '缺少 dist/index.html，请先运行 npm run build');
 mkdirSync('e2e/shots', { recursive: true });
+
+// 启动隔离服务：全新存储 → 每次运行都从初始演示方案开始
+const server = createServer();
+await new Promise((resolve, reject) => {
+  server.once('error', reject);
+  server.listen(0, '127.0.0.1', resolve);
+});
+const BASE = `http://127.0.0.1:${server.address().port}`;
+console.log(`隔离验证服务已启动: ${BASE}（结束后自动清理）`);
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1600, height: 950 } });
@@ -17,16 +29,22 @@ const shot = (name) => page.screenshot({ path: `e2e/shots/${name}.png`, fullPage
 const step = (msg) => console.log(`  ✓ ${msg}`);
 
 try {
-  // 1. 打开演练台，任务列表渲染
+  // 0. 随应用打包的中文字体已加载（无需系统字体）
   await page.goto(BASE, { waitUntil: 'networkidle' });
   await page.waitForSelector('[data-testid="task-item-T1"]');
+  await page.evaluate(() => document.fonts.ready);
+  const fontOk = await page.evaluate(() => document.fonts.check('14px "Noto Sans SC"', '割接演练'));
+  assert.ok(fontOk, '中文字体 Noto Sans SC 未加载');
+  step('中文字体随应用加载成功（无需系统字体）');
+
+  // 1. 打开演练台，任务列表渲染
   for (const id of ['T1', 'T2', 'T3', 'T4']) await page.waitForSelector(`[data-testid="task-item-${id}"]`);
   step('方案与任务列表加载成功（T1~T4）');
 
   // 2. 录入新任务（验证录入能力）
   await page.click('[data-testid="add-task"]');
   await page.waitForSelector('[data-testid="task-item-T5"]');
-  await page.click('[data-testid="task-item-T5"] .danger, [data-testid="task-editor"] .danger'); // 删除，保持演示方案干净
+  await page.click('[data-testid="task-editor"] .danger'); // 删除，保持演示方案干净
   await page.waitForSelector('[data-testid="task-item-T5"]', { state: 'detached' });
   step('任务录入/删除可用');
 
@@ -119,4 +137,6 @@ try {
   console.log('\n全部浏览器验证通过 ✅');
 } finally {
   await browser.close();
+  await new Promise(r => server.close(r));
+  console.log('隔离验证服务已清理');
 }

@@ -1,10 +1,25 @@
+/* 随应用打包的中文字体（public/fonts/，构建时复制到 dist），无需系统字体 */
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/NotoSansSC-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/NotoSansSC-Bold.woff2') format('woff2');
+}
 :root {
   --bg: #0d1117; --panel: #161b22; --panel2: #1c2330; --border: #2d3646;
   --text: #e6edf3; --muted: #8b949e; --accent: #4da3ff; --ok: #3fb950;
   --warn: #d29922; --bad: #f85149; --alt: #3fb950;
 }
 * { box-sizing: border-box; margin: 0; }
-body { background: var(--bg); color: var(--text); font: 14px/1.5 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
+body { background: var(--bg); color: var(--text); font: 14px/1.5 'Noto Sans SC', "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
 button { font: inherit; color: inherit; background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
 button:hover { border-color: var(--accent); }
 input, select { width: 100%; background: #0d1420; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font: inherit; }

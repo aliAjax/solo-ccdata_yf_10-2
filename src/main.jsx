@@ -234,7 +234,7 @@ function App() {
                     <span className="seq">{i + 1}</span>
                     <div className="step-info"><strong>{t?.name}</strong>
                       <small>{fmt(o.start)} ~ {fmt(o.end)} · 资源 {t?.resource || '—'} · 依赖 {(t?.dependsOn || []).join('、') || '无'}</small></div>
-                    <button onClick={() => runSim(o.taskId)} data-testid={`simulate-${o.taskId}`}>⚡ 模拟中断</button>
+                    <button onClick={() => runSim(o.taskId)} data-testid={`simulate-${o.taskId}`}>⚠ 模拟中断</button>
                   </div>
                 );
               })}
@@ -291,7 +291,7 @@ function App() {
           )}
           {pub && (
             <div className={`publish-result ${pub.ok ? 'ok' : 'refused'}`} data-testid="publish-result">
-              <div className="panel-title"><span>{pub.ok ? '✓ 发布成功' : '✗ 发布被拒绝'}</span></div>
+              <div className="panel-title"><span>{pub.ok ? '✓ 发布成功' : '× 发布被拒绝'}</span></div>
               {pub.ok
                 ? <small>演练 {pub.drillId} 全部通过，方案已发布。</small>
                 : (pub.reasons || []).map((r, i) => (

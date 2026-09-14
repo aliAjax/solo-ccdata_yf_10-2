@@ -16,8 +16,16 @@ npm run server     # 启动 http://localhost:4173（API + 静态托管）
 
 ```bash
 npm test           # 23 个测试：依赖排序 / 冲突 / 替代路径 / 失败中断 / 并发演练 / 回滚失败
-npm run verify     # 真实浏览器（Playwright + Chromium）端到端 12 步验证，截图存 e2e/shots/
+npm run verify     # 真实浏览器（Playwright + Chromium）端到端验证，截图存 e2e/shots/
 ```
+
+`npm run verify` 自包含：脚本自行启动隔离服务（全新内存存储、每次从初始演示方案开始），
+结束后自动清理，不依赖任何手动启动的常驻服务，可连续重复执行且结果一致。
+
+## 中文字体
+
+应用随包提供裁剪后的 Noto Sans SC（`public/fonts/`，Regular + Bold 各约 4.5MB woff2，
+覆盖全部 CJK 常用字与界面符号），通过 `@font-face` 加载，无需系统字体即可正常显示中文。
 
 ## 结构
 
